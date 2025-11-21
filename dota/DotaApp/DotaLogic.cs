@@ -6,10 +6,8 @@ namespace DotaApp
 {
     public class DotaLogic
     {
-        // Убираем локальный счетчик ID
         public Hero CreateHero(string name, string role, string attribute, int complexity)
         {
-            // Получаем следующий ID из общего хранилища
             int nextId = ShareData.Instance.GetNextId();
             var hero = new Hero(nextId, name, role, attribute, complexity);
             ShareData.Instance.AddHero(hero);

@@ -87,7 +87,6 @@ namespace DotaApp
             }
         }
 
-        // Новый метод для получения следующего ID
         public int GetNextId()
         {
             lock (lockObject)

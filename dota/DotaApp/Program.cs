@@ -13,7 +13,6 @@ namespace DotaApp
 
         static void Main(string[] args)
         {
-            // Инициализация начальных героев через общую логику
             var initialHeroes = new[]
             {
                 dotaLogic.CreateHero("Axe", "Initiator", "Strength", 1),
@@ -31,7 +30,6 @@ namespace DotaApp
 
             formThread.Start();
 
-            // В основном потоке - консольное меню
             while (true)
             {
                 Console.WriteLine("\n--- Меню ---");
@@ -74,7 +72,6 @@ namespace DotaApp
             }
         }
 
-        // Остальные методы остаются без изменений...
         static void ShowAllHeroes()
         {
             var heroes = ShareData.Instance.GetHeroesSnapshot();

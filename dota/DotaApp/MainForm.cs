@@ -10,7 +10,6 @@ namespace DotaApp
     {
         private DotaLogic dotaLogic;
 
-        // Элементы формы
         private ListBox lstHeroes;
         private TextBox txtName;
         private ComboBox cmbRole;
@@ -43,12 +42,10 @@ namespace DotaApp
 
         private void InitializeComponents()
         {
-            // Настройка формы
             this.Text = "DOTA 2 Hero Manager";
             this.Size = new Size(400, 380);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            // Создание элементов
             CreateControls();
             PositionControls();
             SetupEventHandlers();
@@ -56,29 +53,24 @@ namespace DotaApp
 
         private void CreateControls()
         {
-            // ListBox для героев
             lstHeroes = new ListBox();
             lstHeroes.Size = new Size(200, 225);
             lstHeroes.Location = new Point(12, 12);
 
-            // TextBox для имени
             txtName = new TextBox();
             txtName.Size = new Size(150, 20);
             txtName.Location = new Point(218, 28);
 
-            // ComboBox для роли
             cmbRole = new ComboBox();
             cmbRole.Size = new Size(150, 21);
             cmbRole.Location = new Point(218, 67);
             cmbRole.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // ComboBox для атрибута
             cmbAttribute = new ComboBox();
             cmbAttribute.Size = new Size(150, 21);
             cmbAttribute.Location = new Point(218, 106);
             cmbAttribute.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // NumericUpDown для сложности
             numComplexity = new NumericUpDown();
             numComplexity.Size = new Size(60, 20);
             numComplexity.Location = new Point(218, 145);
@@ -86,13 +78,11 @@ namespace DotaApp
             numComplexity.Maximum = 3;
             numComplexity.Value = 1;
 
-            // ComboBox для поиска по роли
             cmbSearchRole = new ComboBox();
             cmbSearchRole.Size = new Size(120, 21);
             cmbSearchRole.Location = new Point(12, 285);
             cmbSearchRole.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // Кнопки
             btnCreate = new Button();
             btnCreate.Text = "Создать";
             btnCreate.Size = new Size(75, 23);
@@ -123,7 +113,6 @@ namespace DotaApp
             btnGroupByAttribute.Size = new Size(180, 23);
             btnGroupByAttribute.Location = new Point(12, 312);
 
-            // Метки
             lblName = new Label();
             lblName.Text = "Имя:";
             lblName.Location = new Point(215, 12);
@@ -152,7 +141,6 @@ namespace DotaApp
 
         private void PositionControls()
         {
-            // Добавление элементов на форму
             this.Controls.AddRange(new Control[] {
                 lstHeroes, txtName, cmbRole, cmbAttribute, numComplexity, cmbSearchRole,
                 btnCreate, btnUpdate, btnDelete, btnRefresh, btnFindByRole, btnGroupByAttribute,
@@ -162,7 +150,6 @@ namespace DotaApp
 
         private void SetupEventHandlers()
         {
-            // Назначение обработчиков событий
             btnCreate.Click += btnCreate_Click;
             btnUpdate.Click += btnUpdate_Click;
             btnDelete.Click += btnDelete_Click;
