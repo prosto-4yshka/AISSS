@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using DataAccessLayer;
 
 namespace DotaApp
 {
     public partial class MainForm : Form
     {
         private DotaLogic dotaLogic;
-
-        // Элементы формы
         private ListBox lstHeroes;
         private TextBox txtName;
         private ComboBox cmbRole;
@@ -31,145 +30,145 @@ namespace DotaApp
 
         public MainForm()
         {
-            InitializeComponents();
+            BuildForm();
             dotaLogic = new DotaLogic();
-
-
-
-            RefreshHeroesList();
-            LoadAttributes();
             LoadRoles();
+            LoadAttributes();
+            RefreshHeroesList();
         }
 
-        private void InitializeComponents()
+        private void BuildForm()
         {
-            // Настройка формы
             this.Text = "DOTA 2 Hero Manager";
             this.Size = new Size(400, 380);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            // Создание элементов
-            CreateControls();
-            PositionControls();
-            SetupEventHandlers();
-        }
-
-        private void CreateControls()
-        {
-            // ListBox для героев
             lstHeroes = new ListBox();
+            lstHeroes.Name = "lstHeroes";
             lstHeroes.Size = new Size(200, 225);
             lstHeroes.Location = new Point(12, 12);
+            lstHeroes.SelectedIndexChanged += lstHeroes_SelectedIndexChanged;
 
-            // TextBox для имени
             txtName = new TextBox();
+            txtName.Name = "txtName";
             txtName.Size = new Size(150, 20);
             txtName.Location = new Point(218, 28);
 
-            // ComboBox для роли
             cmbRole = new ComboBox();
+            cmbRole.Name = "cmbRole";
             cmbRole.Size = new Size(150, 21);
             cmbRole.Location = new Point(218, 67);
             cmbRole.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // ComboBox для атрибута
             cmbAttribute = new ComboBox();
+            cmbAttribute.Name = "cmbAttribute";
             cmbAttribute.Size = new Size(150, 21);
             cmbAttribute.Location = new Point(218, 106);
             cmbAttribute.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // NumericUpDown для сложности
             numComplexity = new NumericUpDown();
+            numComplexity.Name = "numComplexity";
             numComplexity.Size = new Size(60, 20);
             numComplexity.Location = new Point(218, 145);
             numComplexity.Minimum = 1;
             numComplexity.Maximum = 3;
             numComplexity.Value = 1;
 
-            // ComboBox для поиска по роли
             cmbSearchRole = new ComboBox();
+            cmbSearchRole.Name = "cmbSearchRole";
             cmbSearchRole.Size = new Size(120, 21);
             cmbSearchRole.Location = new Point(12, 285);
             cmbSearchRole.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // Кнопки
             btnCreate = new Button();
+            btnCreate.Name = "btnCreate";
             btnCreate.Text = "Создать";
             btnCreate.Size = new Size(75, 23);
             btnCreate.Location = new Point(218, 171);
+            btnCreate.Click += btnCreate_Click;
 
             btnUpdate = new Button();
+            btnUpdate.Name = "btnUpdate";
             btnUpdate.Text = "Обновить";
             btnUpdate.Size = new Size(75, 23);
             btnUpdate.Location = new Point(218, 200);
+            btnUpdate.Click += btnUpdate_Click;
 
             btnDelete = new Button();
+            btnDelete.Name = "btnDelete";
             btnDelete.Text = "Удалить";
             btnDelete.Size = new Size(75, 23);
             btnDelete.Location = new Point(218, 229);
+            btnDelete.Click += btnDelete_Click;
 
             btnRefresh = new Button();
+            btnRefresh.Name = "btnRefresh";
             btnRefresh.Text = "Обновить список";
             btnRefresh.Size = new Size(120, 23);
             btnRefresh.Location = new Point(12, 243);
+            btnRefresh.Click += btnRefresh_Click;
 
             btnFindByRole = new Button();
+            btnFindByRole.Name = "btnFindByRole";
             btnFindByRole.Text = "Найти по роли";
             btnFindByRole.Size = new Size(100, 23);
             btnFindByRole.Location = new Point(138, 283);
+            btnFindByRole.Click += btnFindByRole_Click;
 
             btnGroupByAttribute = new Button();
+            btnGroupByAttribute.Name = "btnGroupByAttribute";
             btnGroupByAttribute.Text = "Группировать по атрибуту";
             btnGroupByAttribute.Size = new Size(180, 23);
             btnGroupByAttribute.Location = new Point(12, 312);
+            btnGroupByAttribute.Click += btnGroupByAttribute_Click;
 
-            // Метки
             lblName = new Label();
+            lblName.Name = "lblName";
             lblName.Text = "Имя:";
             lblName.Location = new Point(215, 12);
             lblName.AutoSize = true;
 
             lblRole = new Label();
+            lblRole.Name = "lblRole";
             lblRole.Text = "Роль:";
             lblRole.Location = new Point(215, 51);
             lblRole.AutoSize = true;
 
             lblAttribute = new Label();
+            lblAttribute.Name = "lblAttribute";
             lblAttribute.Text = "Атрибут:";
             lblAttribute.Location = new Point(215, 90);
             lblAttribute.AutoSize = true;
 
             lblComplexity = new Label();
+            lblComplexity.Name = "lblComplexity";
             lblComplexity.Text = "Сложность:";
             lblComplexity.Location = new Point(215, 129);
             lblComplexity.AutoSize = true;
 
             lblSearchRole = new Label();
+            lblSearchRole.Name = "lblSearchRole";
             lblSearchRole.Text = "Поиск по роли:";
             lblSearchRole.Location = new Point(12, 269);
             lblSearchRole.AutoSize = true;
-        }
 
-        private void PositionControls()
-        {
-            // Добавление элементов на форму
-            this.Controls.AddRange(new Control[] {
-                lstHeroes, txtName, cmbRole, cmbAttribute, numComplexity, cmbSearchRole,
-                btnCreate, btnUpdate, btnDelete, btnRefresh, btnFindByRole, btnGroupByAttribute,
-                lblName, lblRole, lblAttribute, lblComplexity, lblSearchRole
-            });
-        }
-
-        private void SetupEventHandlers()
-        {
-            // Назначение обработчиков событий
-            btnCreate.Click += btnCreate_Click;
-            btnUpdate.Click += btnUpdate_Click;
-            btnDelete.Click += btnDelete_Click;
-            btnRefresh.Click += btnRefresh_Click;
-            btnFindByRole.Click += btnFindByRole_Click;
-            btnGroupByAttribute.Click += btnGroupByAttribute_Click;
-            lstHeroes.SelectedIndexChanged += lstHeroes_SelectedIndexChanged;
+            this.Controls.Add(lstHeroes);
+            this.Controls.Add(txtName);
+            this.Controls.Add(cmbRole);
+            this.Controls.Add(cmbAttribute);
+            this.Controls.Add(numComplexity);
+            this.Controls.Add(cmbSearchRole);
+            this.Controls.Add(btnCreate);
+            this.Controls.Add(btnUpdate);
+            this.Controls.Add(btnDelete);
+            this.Controls.Add(btnRefresh);
+            this.Controls.Add(btnFindByRole);
+            this.Controls.Add(btnGroupByAttribute);
+            this.Controls.Add(lblName);
+            this.Controls.Add(lblRole);
+            this.Controls.Add(lblAttribute);
+            this.Controls.Add(lblComplexity);
+            this.Controls.Add(lblSearchRole);
         }
 
         private void btnCreate_Click(object sender, EventArgs e)
@@ -275,6 +274,7 @@ namespace DotaApp
                 numComplexity.Value = selectedHero.Complexity;
             }
         }
+
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             RefreshHeroesList();
@@ -282,7 +282,7 @@ namespace DotaApp
 
         private void RefreshHeroesList()
         {
-            var heroes = ShareData.Instance.GetHeroesSnapshot();
+            var heroes = dotaLogic.GetAllHeroes();
             lstHeroes.DataSource = null;
             lstHeroes.DataSource = heroes;
             lstHeroes.DisplayMember = "Name";
@@ -296,7 +296,7 @@ namespace DotaApp
 
         private void LoadRoles()
         {
-            var roles = new[] { "Carry", "Support", "Initiator", "Disabler", "Nuker", "Durable" };
+            var roles = new[] { "Carry", "Support", "Mid", "Harder", "Hard support", "Lesnik" };
             cmbRole.DataSource = roles;
             cmbSearchRole.DataSource = roles.ToList();
         }

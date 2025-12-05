@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35728.132
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotaApp", "DotaApp\DotaApp.csproj", "{F59DE5FA-D321-4500-92D5-B95F40927C1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "DataAccessLayer\DataAccessLayer.csproj", "{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +17,15 @@ Global
 		{F59DE5FA-D321-4500-92D5-B95F40927C1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F59DE5FA-D321-4500-92D5-B95F40927C1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F59DE5FA-D321-4500-92D5-B95F40927C1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {846EF923-A709-4072-B929-316764ED07A7}
 	EndGlobalSection
 EndGlobal
