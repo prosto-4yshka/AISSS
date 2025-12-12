@@ -6,7 +6,10 @@ namespace DataAccessLayer
 {
     public class DapperRepository<T> : IRepository<T> where T : class, IDomainObject
     {
-        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DotaDB;Integrated Security=True";
+        private readonly string _connectionString =
+            @"Data Source=(LocalDB)\MSSQLLocalDB;Initial Catalog=DotaDB;Integrated Security=True";
+
+        // БАЗОВЫЕ CRUD МЕТОДЫ
 
         public void Add(T item)
         {
@@ -54,6 +57,40 @@ namespace DataAccessLayer
             {
                 var sql = "SELECT * FROM Heroes";
                 return connection.Query<T>(sql);
+            }
+        }
+
+        // МЕТОДЫ ПАГИНАЦИИ (ДОБАВЛЯЕМ)
+
+        public IEnumerable<T> GetPage(int pageNumber, int pageSize)
+        {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var sql = @"
+                    SELECT * FROM Heroes 
+                    ORDER BY Id 
+                    OFFSET @Offset ROWS 
+                    FETCH NEXT @PageSize ROWS ONLY";
+
+                var offset = (pageNumber - 1) * pageSize;
+
+                return connection.Query<T>(sql, new
+                {
+                    Offset = offset,
+                    PageSize = pageSize
+                });
+            }
+        }
+
+        public int GetTotalCount()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var sql = "SELECT COUNT(*) FROM Heroes";
+                return connection.ExecuteScalar<int>(sql);
             }
         }
     }

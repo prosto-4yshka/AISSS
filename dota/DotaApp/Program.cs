@@ -1,26 +1,40 @@
-﻿using DataAccessLayer;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using DotaApp;
+using DataAccessLayer;
 
 namespace DotaApp
 {
     class Program
     {
-        // Используем DotaLogic с репозиторием
         static DotaLogic dotaLogic = new DotaLogic();
 
         static void Main(string[] args)
         {
-            // Инициализация базы данных (добавляем тестовые данные)
-            InitializeDatabase();
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            Console.WriteLine("База данных инициализирована.");
-            Console.WriteLine("Запуск формы...");
+            Console.WriteLine("=== Dota 2 Hero Manager ===");
+            Console.WriteLine("Инициализация базы данных...");
 
-            // Запускаем отдельный поток для взаимодействия с формой
+            try
+            {
+                // Проверяем и инициализируем базу данных
+                CheckAndInitializeDatabase();
+
+                Console.WriteLine("База данных готова!");
+                Console.WriteLine("Запуск графического интерфейса...\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при инициализации БД: {ex.Message}");
+                Console.WriteLine("Убедитесь, что установлен SQL Server LocalDB");
+                Console.WriteLine("Нажмите любую клавишу для выхода...");
+                Console.ReadKey();
+                return;
+            }
+
+            // Запускаем форму в отдельном потоке
             var formThread = new Thread(() =>
             {
                 Application.EnableVisualStyles();
@@ -30,18 +44,53 @@ namespace DotaApp
 
             formThread.Start();
 
+            // Запускаем консольное меню
+            ShowConsoleMenu();
+        }
+
+        static void CheckAndInitializeDatabase()
+        {
+            // Просто пытаемся получить данные - если БД нет, она создастся автоматически
+            var count = dotaLogic.GetTotalHeroesCount();
+            Console.WriteLine($"В базе найдено героев: {count}");
+
+            // Если база пустая - добавляем тестовых героев
+            if (count == 0)
+            {
+                Console.WriteLine("Добавляем тестовых героев...");
+
+                dotaLogic.CreateHero("Axe", "Initiator", "Strength", 1);
+                dotaLogic.CreateHero("Juggernaut", "Carry", "Agility", 2);
+                dotaLogic.CreateHero("Crystal Maiden", "Support", "Intelligence", 1);
+                dotaLogic.CreateHero("Invoker", "Mid", "Intelligence", 3);
+                dotaLogic.CreateHero("Pudge", "Harder", "Strength", 2);
+                dotaLogic.CreateHero("Windranger", "Mid", "Agility", 2);
+                dotaLogic.CreateHero("Lina", "Mid", "Intelligence", 2);
+                dotaLogic.CreateHero("Sven", "Carry", "Strength", 1);
+                dotaLogic.CreateHero("Lion", "Support", "Intelligence", 2);
+                dotaLogic.CreateHero("Phantom Assassin", "Carry", "Agility", 2);
+
+                Console.WriteLine("Добавлено 10 тестовых героев");
+            }
+        }
+
+        static void ShowConsoleMenu()
+        {
             while (true)
             {
-                Console.WriteLine("\n--- Консольное меню ---");
+                Console.WriteLine("\n=== КОНСОЛЬНОЕ МЕНЮ ===");
                 Console.WriteLine("1. Показать всех героев");
-                Console.WriteLine("2. Создать героя");
-                Console.WriteLine("3. Обновить героя");
-                Console.WriteLine("4. Удалить героя");
-                Console.WriteLine("5. Группировать по атрибуту");
-                Console.WriteLine("6. Найти по роли");
-                Console.WriteLine("7. Найти героя по ID");
+                Console.WriteLine("2. Показать героев с пагинацией");
+                Console.WriteLine("3. Создать героя");
+                Console.WriteLine("4. Обновить героя");
+                Console.WriteLine("5. Удалить героя");
+                Console.WriteLine("6. Найти героя по ID");
+                Console.WriteLine("7. Найти героев по роли");
+                Console.WriteLine("8. Группировать по атрибуту");
+                Console.WriteLine("9. Статистика базы данных");
                 Console.WriteLine("0. Выйти");
                 Console.Write("Выберите опцию: ");
+
                 var choice = Console.ReadLine();
 
                 switch (choice)
@@ -50,99 +99,140 @@ namespace DotaApp
                         ShowAllHeroes();
                         break;
                     case "2":
-                        CreateHeroConsole();
+                        ShowHeroesWithPagination();
                         break;
                     case "3":
-                        UpdateHeroConsole();
+                        CreateHeroConsole();
                         break;
                     case "4":
-                        DeleteHeroConsole();
+                        UpdateHeroConsole();
                         break;
                     case "5":
-                        GroupByAttributeConsole();
+                        DeleteHeroConsole();
                         break;
                     case "6":
-                        FindByRoleConsole();
+                        FindHeroById();
                         break;
                     case "7":
-                        FindByIdConsole();
+                        FindHeroesByRole();
+                        break;
+                    case "8":
+                        GroupByAttributeConsole();
+                        break;
+                    case "9":
+                        ShowDatabaseStats();
                         break;
                     case "0":
+                        Console.WriteLine("Выход из программы...");
                         Environment.Exit(0);
                         break;
                     default:
-                        Console.WriteLine("Неверная опция");
+                        Console.WriteLine("Неверная опция! Попробуйте снова.");
                         break;
                 }
             }
         }
 
-        // Инициализация базы данных
-        static void InitializeDatabase()
+        static void ShowAllHeroes()
         {
             try
             {
-                // Проверяем, есть ли уже герои в базе
-                var existingHeroes = dotaLogic.GetAllHeroes();
+                var heroes = dotaLogic.GetAllHeroes();
 
-                if (!existingHeroes.Any())
+                if (!heroes.Any())
                 {
-                    Console.WriteLine("Создание тестовых героев...");
-
-                    var testHeroes = new[]
-                    {
-                        dotaLogic.CreateHero("Axe", "Initiator", "Strength", 1),
-                        dotaLogic.CreateHero("Juggernaut", "Carry", "Agility", 2),
-                        dotaLogic.CreateHero("Crystal Maiden", "Support", "Intelligence", 1)
-                    };
-
-                    Console.WriteLine($"Создано {testHeroes.Length} тестовых героев.");
+                    Console.WriteLine("Нет героев в базе данных.");
+                    return;
                 }
-                else
+
+                Console.WriteLine("\n=== ВСЕ ГЕРОИ ===");
+                Console.WriteLine("ID  | Имя                  | Роль           | Атрибут       | Сложность");
+                Console.WriteLine(new string('-', 80));
+
+                foreach (var hero in heroes)
                 {
-                    Console.WriteLine($"В базе уже есть {existingHeroes.Count} героев.");
+                    Console.WriteLine($"{hero.Id,3} | {hero.Name,-20} | {hero.Role,-14} | {hero.Attribute,-12} | {hero.Complexity}");
+                }
+
+                Console.WriteLine($"\nВсего героев: {heroes.Count}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+        }
+
+        static void ShowHeroesWithPagination()
+        {
+            try
+            {
+                Console.Write("Сколько героев на странице (по умолчанию 5): ");
+                if (!int.TryParse(Console.ReadLine(), out int pageSize) || pageSize < 1)
+                    pageSize = 5;
+
+                var totalHeroes = dotaLogic.GetTotalHeroesCount();
+                var totalPages = dotaLogic.GetTotalPages(pageSize);
+
+                if (totalHeroes == 0)
+                {
+                    Console.WriteLine("Нет героев в базе данных.");
+                    return;
+                }
+
+                Console.WriteLine($"Всего героев: {totalHeroes}, Страниц: {totalPages}");
+
+                int currentPage = 1;
+
+                while (true)
+                {
+                    var heroes = dotaLogic.GetHeroesPage(currentPage, pageSize);
+
+                    Console.WriteLine($"\n=== СТРАНИЦА {currentPage} из {totalPages} ===");
+                    Console.WriteLine("ID  | Имя                  | Роль           | Атрибут       | Сложность");
+                    Console.WriteLine(new string('-', 80));
+
+                    foreach (var hero in heroes)
+                    {
+                        Console.WriteLine($"{hero.Id,3} | {hero.Name,-20} | {hero.Role,-14} | {hero.Attribute,-12} | {hero.Complexity}");
+                    }
+
+                    Console.WriteLine($"\nСтраница {currentPage} из {totalPages} ({heroes.Count} героев на странице)");
+                    Console.WriteLine("\nКоманды: n - следующая, p - предыдущая, f - первая, l - последняя, q - выход");
+                    Console.Write("Выберите действие: ");
+                    var command = Console.ReadLine()?.ToLower();
+
+                    if (command == "n" && currentPage < totalPages)
+                        currentPage++;
+                    else if (command == "p" && currentPage > 1)
+                        currentPage--;
+                    else if (command == "f")
+                        currentPage = 1;
+                    else if (command == "l")
+                        currentPage = totalPages;
+                    else if (command == "q")
+                        break;
+                    else if (int.TryParse(command, out int pageNumber) && pageNumber >= 1 && pageNumber <= totalPages)
+                        currentPage = pageNumber;
+                    else if (command != "n" && command != "p" && command != "f" && command != "l" && command != "q")
+                        Console.WriteLine("Неверная команда!");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при инициализации базы данных: {ex.Message}");
-                Console.WriteLine("Убедитесь, что база данных создана и доступна.");
+                Console.WriteLine($"Ошибка: {ex.Message}");
             }
         }
 
-        // 1. Показать всех героев (ЗАМЕНА: вместо ShareData.Instance.GetHeroesSnapshot())
-        static void ShowAllHeroes()
-        {
-            var heroes = dotaLogic.GetAllHeroes(); // ЗАМЕНА
-
-            if (!heroes.Any())
-            {
-                Console.WriteLine("Нет героев в базе данных.");
-                return;
-            }
-
-            Console.WriteLine("\nВсе герои:");
-            Console.WriteLine("=========================================");
-            Console.WriteLine("ID | Имя | Роль | Атрибут | Сложность");
-            Console.WriteLine("-----------------------------------------");
-
-            foreach (var hero in heroes)
-            {
-                Console.WriteLine($"{hero.Id,3} | {hero.Name,-15} | {hero.Role,-12} | {hero.Attribute,-12} | {hero.Complexity}");
-            }
-            Console.WriteLine("=========================================");
-            Console.WriteLine($"Всего: {heroes.Count} героев");
-        }
-
-        // 2. Создать героя (ОСТАЛОСЬ ТАК ЖЕ)
         static void CreateHeroConsole()
         {
             try
             {
-                Console.Write("Введите имя: ");
+                Console.WriteLine("\n=== СОЗДАНИЕ НОВОГО ГЕРОЯ ===");
+
+                Console.Write("Введите имя героя: ");
                 string name = Console.ReadLine();
 
-                Console.Write("Введите роль: ");
+                Console.Write("Введите роль (Carry/Support/Mid/Harder/Hard support/Lesnik): ");
                 string role = Console.ReadLine();
 
                 Console.Write("Введите атрибут (Strength/Agility/Intelligence): ");
@@ -156,7 +246,12 @@ namespace DotaApp
                 }
 
                 var hero = dotaLogic.CreateHero(name, role, attribute, complexity);
-                Console.WriteLine($"✓ Создан герой: {hero.Name} (ID: {hero.Id})");
+                Console.WriteLine($"\n✓ Создан герой: {hero.Name} (ID: {hero.Id})");
+                Console.WriteLine($"Роль: {hero.Role}, Атрибут: {hero.Attribute}, Сложность: {hero.Complexity}");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Ошибка валидации: {ex.Message}");
             }
             catch (Exception ex)
             {
@@ -164,44 +259,49 @@ namespace DotaApp
             }
         }
 
-        // 3. Обновить героя (ОСТАЛОСЬ ТАК ЖЕ)
         static void UpdateHeroConsole()
         {
             try
             {
                 Console.Write("Введите ID героя для обновления: ");
-                if (!int.TryParse(Console.ReadLine(), out int id))
+                if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
                 {
                     Console.WriteLine("Ошибка: неверный формат ID");
                     return;
                 }
 
-                // Проверяем, существует ли герой
-                var existingHero = dotaLogic.GetHeroById(id); // НОВЫЙ МЕТОД
+                // Проверяем существование героя
+                var existingHero = dotaLogic.GetHeroById(id);
                 if (existingHero == null)
                 {
                     Console.WriteLine($"Герой с ID {id} не найден.");
                     return;
                 }
 
-                Console.WriteLine($"Текущие данные: {existingHero.Name} | {existingHero.Role} | {existingHero.Attribute} | Сложность: {existingHero.Complexity}");
+                Console.WriteLine($"\nТекущие данные героя {existingHero.Name} (ID: {id}):");
+                Console.WriteLine($"Имя: {existingHero.Name}");
+                Console.WriteLine($"Роль: {existingHero.Role}");
+                Console.WriteLine($"Атрибут: {existingHero.Attribute}");
+                Console.WriteLine($"Сложность: {existingHero.Complexity}");
 
-                Console.Write("Введите новое имя (или Enter чтобы оставить текущее): ");
+                Console.WriteLine("\nВведите новые данные (оставьте пустым чтобы не менять):");
+
+                Console.Write("Новое имя: ");
                 string name = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(name))
                     name = existingHero.Name;
 
-                Console.Write("Введите новую роль (или Enter чтобы оставить текущую): ");
+                Console.Write("Новая роль: ");
                 string role = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(role))
                     role = existingHero.Role;
 
-                Console.Write("Введите новый атрибут (или Enter чтобы оставить текущий): ");
+                Console.Write("Новый атрибут: ");
                 string attribute = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(attribute))
                     attribute = existingHero.Attribute;
 
-                Console.Write("Введите новую сложность 1-3 (или Enter чтобы оставить текущую): ");
+                Console.Write("Новая сложность (1-3): ");
                 string complexityInput = Console.ReadLine();
                 int complexity;
                 if (string.IsNullOrWhiteSpace(complexityInput))
@@ -214,12 +314,16 @@ namespace DotaApp
 
                 if (dotaLogic.UpdateHero(id, name, role, attribute, complexity))
                 {
-                    Console.WriteLine("✓ Герой обновлен");
+                    Console.WriteLine("\n✓ Герой успешно обновлен!");
                 }
                 else
                 {
-                    Console.WriteLine("✗ Ошибка при обновлении героя");
+                    Console.WriteLine("\n✗ Ошибка при обновлении героя");
                 }
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Ошибка валидации: {ex.Message}");
             }
             catch (Exception ex)
             {
@@ -227,19 +331,17 @@ namespace DotaApp
             }
         }
 
-        // 4. Удалить героя (ОСТАЛОСЬ ТАК ЖЕ)
         static void DeleteHeroConsole()
         {
             try
             {
                 Console.Write("Введите ID героя для удаления: ");
-                if (!int.TryParse(Console.ReadLine(), out int id))
+                if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
                 {
                     Console.WriteLine("Ошибка: неверный формат ID");
                     return;
                 }
 
-                // Можно показать, что удаляем
                 var hero = dotaLogic.GetHeroById(id);
                 if (hero == null)
                 {
@@ -247,23 +349,30 @@ namespace DotaApp
                     return;
                 }
 
-                Console.Write($"Вы уверены, что хотите удалить героя '{hero.Name}' (ID: {hero.Id})? (y/n): ");
-                var confirm = Console.ReadLine();
+                Console.WriteLine($"\nВы уверены, что хотите удалить героя?");
+                Console.WriteLine($"ID: {hero.Id}");
+                Console.WriteLine($"Имя: {hero.Name}");
+                Console.WriteLine($"Роль: {hero.Role}");
+                Console.WriteLine($"Атрибут: {hero.Attribute}");
+                Console.WriteLine($"Сложность: {hero.Complexity}");
 
-                if (confirm?.ToLower() == "y")
+                Console.Write("\nПодтвердите удаление (y/n): ");
+                var confirm = Console.ReadLine()?.ToLower();
+
+                if (confirm == "y" || confirm == "yes" || confirm == "да")
                 {
                     if (dotaLogic.DeleteHero(id))
                     {
-                        Console.WriteLine($"✓ Герой '{hero.Name}' удален");
+                        Console.WriteLine($"\n✓ Герой '{hero.Name}' успешно удален!");
                     }
                     else
                     {
-                        Console.WriteLine("✗ Ошибка при удалении героя");
+                        Console.WriteLine("\n✗ Ошибка при удалении героя");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Удаление отменено");
+                    Console.WriteLine("\nУдаление отменено");
                 }
             }
             catch (Exception ex)
@@ -272,42 +381,39 @@ namespace DotaApp
             }
         }
 
-        // 5. Группировать по атрибуту (ЗАМЕНА: вместо ShareData.Instance.GetHeroesSnapshot())
-        static void GroupByAttributeConsole()
+        static void FindHeroById()
         {
             try
             {
-                var groups = dotaLogic.GroupByAttribute(); // ЗАМЕНА
-
-                if (!groups.Any())
+                Console.Write("Введите ID героя: ");
+                if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
                 {
-                    Console.WriteLine("Нет героев для группировки.");
+                    Console.WriteLine("Ошибка: неверный формат ID");
                     return;
                 }
 
-                Console.WriteLine("\nГруппировка по атрибуту:");
-                Console.WriteLine("==========================");
+                var hero = dotaLogic.GetHeroById(id);
 
-                foreach (var group in groups)
+                if (hero == null)
                 {
-                    Console.WriteLine($"\n{group.Key.ToUpper()}:");
-                    Console.WriteLine(new string('-', group.Key.Length + 1));
-
-                    foreach (var hero in group.Value)
-                    {
-                        Console.WriteLine($"  • {hero.Name,-20} | {hero.Role,-15} | Сложность: {hero.Complexity}");
-                    }
-                    Console.WriteLine($"  Всего: {group.Value.Count} героев");
+                    Console.WriteLine($"Герой с ID {id} не найден.");
+                    return;
                 }
+
+                Console.WriteLine("\n=== НАЙДЕННЫЙ ГЕРОЙ ===");
+                Console.WriteLine($"ID: {hero.Id}");
+                Console.WriteLine($"Имя: {hero.Name}");
+                Console.WriteLine($"Роль: {hero.Role}");
+                Console.WriteLine($"Атрибут: {hero.Attribute}");
+                Console.WriteLine($"Сложность: {hero.Complexity}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при группировке: {ex.Message}");
+                Console.WriteLine($"Ошибка при поиске героя: {ex.Message}");
             }
         }
 
-        // 6. Найти по роли (ЗАМЕНА: вместо ShareData.Instance.GetHeroesSnapshot())
-        static void FindByRoleConsole()
+        static void FindHeroesByRole()
         {
             try
             {
@@ -320,7 +426,7 @@ namespace DotaApp
                     return;
                 }
 
-                var heroes = dotaLogic.FindByRole(role); // ЗАМЕНА
+                var heroes = dotaLogic.FindByRole(role);
 
                 if (!heroes.Any())
                 {
@@ -328,12 +434,14 @@ namespace DotaApp
                     return;
                 }
 
-                Console.WriteLine($"\nНайдено {heroes.Count} героев с ролью '{role}':");
-                Console.WriteLine("===================================================");
+                Console.WriteLine($"\n=== ГЕРОИ С РОЛЬЮ '{role}' ===");
+                Console.WriteLine($"Найдено: {heroes.Count} героев");
+                Console.WriteLine("ID  | Имя                  | Атрибут       | Сложность");
+                Console.WriteLine(new string('-', 60));
 
                 foreach (var hero in heroes)
                 {
-                    Console.WriteLine($"• {hero.Name,-20} | {hero.Attribute,-12} | Сложность: {hero.Complexity}");
+                    Console.WriteLine($"{hero.Id,3} | {hero.Name,-20} | {hero.Attribute,-12} | {hero.Complexity}");
                 }
             }
             catch (Exception ex)
@@ -342,38 +450,99 @@ namespace DotaApp
             }
         }
 
-        // 7. Новый метод: Найти героя по ID
-        static void FindByIdConsole()
+        static void GroupByAttributeConsole()
         {
             try
             {
-                Console.Write("Введите ID героя: ");
-                if (!int.TryParse(Console.ReadLine(), out int id))
+                var groups = dotaLogic.GroupByAttribute();
+
+                if (!groups.Any())
                 {
-                    Console.WriteLine("Ошибка: неверный формат ID");
+                    Console.WriteLine("Нет героев для группировки.");
                     return;
                 }
 
-                var hero = dotaLogic.GetHeroById(id);
+                Console.WriteLine("\n=== ГРУППИРОВКА ПО АТРИБУТУ ===");
 
-                if (hero == null)
+                foreach (var group in groups)
                 {
-                    Console.WriteLine($"Герой с ID {id} не найден.");
-                    return;
-                }
+                    Console.WriteLine($"\n{group.Key.ToUpper()}: {group.Value.Count} героев");
+                    Console.WriteLine(new string('-', 30));
 
-                Console.WriteLine("\nНайден герой:");
-                Console.WriteLine("================");
-                Console.WriteLine($"ID: {hero.Id}");
-                Console.WriteLine($"Имя: {hero.Name}");
-                Console.WriteLine($"Роль: {hero.Role}");
-                Console.WriteLine($"Атрибут: {hero.Attribute}");
-                Console.WriteLine($"Сложность: {hero.Complexity}");
-                Console.WriteLine("================");
+                    foreach (var hero in group.Value)
+                    {
+                        Console.WriteLine($"  • {hero.Name,-20} | {hero.Role,-14} | Сложность: {hero.Complexity}");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при поиске: {ex.Message}");
+                Console.WriteLine($"Ошибка при группировке: {ex.Message}");
+            }
+        }
+
+        static void ShowDatabaseStats()
+        {
+            try
+            {
+                var totalHeroes = dotaLogic.GetTotalHeroesCount();
+
+                if (totalHeroes == 0)
+                {
+                    Console.WriteLine("База данных пуста.");
+                    return;
+                }
+
+                var allHeroes = dotaLogic.GetAllHeroes();
+
+                // Статистика по сложности
+                var complexityGroups = allHeroes
+                    .GroupBy(h => h.Complexity)
+                    .OrderBy(g => g.Key)
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                // Статистика по атрибутам
+                var attributeGroups = dotaLogic.GroupByAttribute();
+
+                // Статистика по ролям
+                var roleGroups = allHeroes
+                    .GroupBy(h => h.Role)
+                    .OrderByDescending(g => g.Count())
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                Console.WriteLine("\n=== СТАТИСТИКА БАЗЫ ДАННЫХ ===");
+                Console.WriteLine($"Всего героев: {totalHeroes}");
+
+                Console.WriteLine("\nПо сложности:");
+                foreach (var group in complexityGroups)
+                {
+                    Console.WriteLine($"  Сложность {group.Key}: {group.Value} героев");
+                }
+
+                Console.WriteLine("\nПо атрибутам:");
+                foreach (var group in attributeGroups)
+                {
+                    double percentage = (double)group.Value.Count / totalHeroes * 100;
+                    Console.WriteLine($"  {group.Key}: {group.Value.Count} героев ({percentage:F1}%)");
+                }
+
+                Console.WriteLine("\nПо ролям:");
+                foreach (var group in roleGroups)
+                {
+                    double percentage = (double)group.Value / totalHeroes * 100;
+                    Console.WriteLine($"  {group.Key}: {group.Value} героев ({percentage:F1}%)");
+                }
+
+                // Самый сложный и самый простой герой
+                var hardestHero = allHeroes.OrderByDescending(h => h.Complexity).FirstOrDefault();
+                var easiestHero = allHeroes.OrderBy(h => h.Complexity).FirstOrDefault();
+
+                Console.WriteLine($"\nСамый сложный герой: {hardestHero?.Name} (Сложность: {hardestHero?.Complexity})");
+                Console.WriteLine($"Самый простой герой: {easiestHero?.Name} (Сложность: {easiestHero?.Complexity})");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при получении статистики: {ex.Message}");
             }
         }
     }

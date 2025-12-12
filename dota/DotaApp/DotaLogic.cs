@@ -1,8 +1,7 @@
-﻿using DataAccessLayer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using DataAccessLayer;
 
 namespace DotaApp
 {
@@ -12,13 +11,10 @@ namespace DotaApp
 
         public DotaLogic()
         {
-            repository = new DapperRepository<Hero>();
+            repository = new EntityRepository<Hero>();
         }
 
-        public DotaLogic(IRepository<Hero> customRepository)
-        {
-            repository = customRepository;
-        }
+        // СТАРЫЕ МЕТОДЫ (остаются без изменений):
 
         public Hero CreateHero(string name, string role, string attribute, int complexity)
         {
@@ -144,23 +140,30 @@ namespace DotaApp
                 .ToList();
         }
 
-        public int GetHeroesCount()
+        // НОВЫЕ МЕТОДЫ ДЛЯ ПАГИНАЦИИ:
+
+        public List<Hero> GetHeroesPage(int pageNumber, int pageSize)
         {
-            return GetAllHeroes().Count;
+            if (pageNumber < 1)
+                throw new ArgumentException("Номер страницы должен быть больше 0");
+            if (pageSize < 1)
+                throw new ArgumentException("Размер страницы должен быть больше 0");
+
+            return repository.GetPage(pageNumber, pageSize).ToList();
         }
 
-        public bool HeroExists(int id)
+        public int GetTotalHeroesCount()
         {
-            return repository.GetById(id) != null;
+            return repository.GetTotalCount();
         }
 
-        public void ClearAllHeroes()
+        public int GetTotalPages(int pageSize)
         {
-            var allHeroes = GetAllHeroes();
-            foreach (var hero in allHeroes)
-            {
-                repository.Delete(hero.Id);
-            }
+            if (pageSize < 1)
+                pageSize = 10;
+
+            var totalCount = GetTotalHeroesCount();
+            return (int)Math.Ceiling((double)totalCount / pageSize);
         }
     }
 }

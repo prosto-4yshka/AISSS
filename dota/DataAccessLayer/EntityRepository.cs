@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-
 namespace DataAccessLayer
 {
     public class EntityRepository<T> : IRepository<T> where T : class, IDomainObject
@@ -12,6 +11,8 @@ namespace DataAccessLayer
         {
             _context = new DotaDbContext();
         }
+
+        // БАЗОВЫЕ CRUD МЕТОДЫ
 
         public void Add(T item)
         {
@@ -47,6 +48,25 @@ namespace DataAccessLayer
         public IEnumerable<T> GetAll()
         {
             return _context.Set<T>().ToList();
+        }
+
+        // МЕТОДЫ ПАГИНАЦИИ (ДОБАВЛЯЕМ)
+
+        public IEnumerable<T> GetPage(int pageNumber, int pageSize)
+        {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            return _context.Set<T>()
+                .OrderBy(x => x.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+
+        public int GetTotalCount()
+        {
+            return _context.Set<T>().Count();
         }
     }
 }
