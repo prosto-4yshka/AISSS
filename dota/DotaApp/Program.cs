@@ -544,7 +544,7 @@ namespace DotaApp
                 foreach (var group in complexityGroups)
                 {
                     Console.WriteLine($"  Сложность {group.Key}: {group.Value} героев");
-                }
+                } 
 
                 Console.WriteLine("\nПо атрибутам:");
                 foreach (var group in attributeGroups)

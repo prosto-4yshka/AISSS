@@ -7,10 +7,12 @@ namespace DotaApp
     {
         public override void Load()
         {
-            // Регистрируем зависимость как Singleton (по заданию)
+            // === ВАРИАНТ 1: Entity Framework (раскомментировать для использования) ===
             Bind<IRepository<Hero>>().To<EntityRepository<Hero>>().InSingletonScope();
 
-            // Регистрируем сам DotaLogic (будет создаваться при каждом запросе)
+            // === ВАРИАНТ 2: Dapper (закомментировать если не нужен) ===
+            //Bind<IRepository<Hero>>().To<DapperRepository<Hero>>().InSingletonScope();
+
             Bind<DotaLogic>().ToSelf();
         }
     }
