@@ -3,32 +3,51 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using DataAccessLayer;
+using Ninject;
 
 namespace DotaApp
 {
     class Program
     {
-        static DotaLogic dotaLogic = new DotaLogic();
+        private static IKernel _ninjectKernel;
+        private static DotaLogic _dotaLogic;
 
         static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
             Console.WriteLine("=== Dota 2 Hero Manager ===");
-            Console.WriteLine("Инициализация базы данных...");
+            Console.WriteLine("Инициализация IoC контейнера (Ninject)...");
 
             try
             {
-                // Проверяем и инициализируем базу данных
-                CheckAndInitializeDatabase();
+                // 1. Создаём ядро Ninject с нашим модулем
+                _ninjectKernel = new StandardKernel(new NinjectConfigModule());
 
-                Console.WriteLine("База данных готова!");
+                // 2. Получаем экземпляр DotaLogic через контейнер
+                _dotaLogic = _ninjectKernel.Get<DotaLogic>();
+
+                Console.WriteLine("IoC контейнер инициализирован!");
+                Console.WriteLine("База данных: DotaDB.mdf");
                 Console.WriteLine("Запуск графического интерфейса...\n");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Ошибка при инициализации IoC: {ex.Message}");
+                Console.WriteLine("Убедитесь, что установлены пакеты Ninject");
+                Console.WriteLine("Нажмите любую клавишу для выхода...");
+                Console.ReadKey();
+                return;
+            }
+
+            // Проверяем и инициализируем базу данных
+            try
+            {
+                CheckAndInitializeDatabase();
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine($"Ошибка при инициализации БД: {ex.Message}");
-                Console.WriteLine("Убедитесь, что установлен SQL Server LocalDB");
                 Console.WriteLine("Нажмите любую клавишу для выхода...");
                 Console.ReadKey();
                 return;
@@ -48,10 +67,16 @@ namespace DotaApp
             ShowConsoleMenu();
         }
 
+        // Публичный метод для получения логики (используется в MainForm)
+        public static DotaLogic GetLogic()
+        {
+            return _dotaLogic;
+        }
+
         static void CheckAndInitializeDatabase()
         {
             // Просто пытаемся получить данные - если БД нет, она создастся автоматически
-            var count = dotaLogic.GetTotalHeroesCount();
+            var count = _dotaLogic.GetTotalHeroesCount();
             Console.WriteLine($"В базе найдено героев: {count}");
 
             // Если база пустая - добавляем тестовых героев
@@ -59,20 +84,22 @@ namespace DotaApp
             {
                 Console.WriteLine("Добавляем тестовых героев...");
 
-                dotaLogic.CreateHero("Axe", "Initiator", "Strength", 1);
-                dotaLogic.CreateHero("Juggernaut", "Carry", "Agility", 2);
-                dotaLogic.CreateHero("Crystal Maiden", "Support", "Intelligence", 1);
-                dotaLogic.CreateHero("Invoker", "Mid", "Intelligence", 3);
-                dotaLogic.CreateHero("Pudge", "Harder", "Strength", 2);
-                dotaLogic.CreateHero("Windranger", "Mid", "Agility", 2);
-                dotaLogic.CreateHero("Lina", "Mid", "Intelligence", 2);
-                dotaLogic.CreateHero("Sven", "Carry", "Strength", 1);
-                dotaLogic.CreateHero("Lion", "Support", "Intelligence", 2);
-                dotaLogic.CreateHero("Phantom Assassin", "Carry", "Agility", 2);
+                _dotaLogic.CreateHero("Axe", "Initiator", "Strength", 1);
+                _dotaLogic.CreateHero("Juggernaut", "Carry", "Agility", 2);
+                _dotaLogic.CreateHero("Crystal Maiden", "Support", "Intelligence", 1);
+                _dotaLogic.CreateHero("Invoker", "Mid", "Intelligence", 3);
+                _dotaLogic.CreateHero("Pudge", "Harder", "Strength", 2);
+                _dotaLogic.CreateHero("Windranger", "Mid", "Agility", 2);
+                _dotaLogic.CreateHero("Lina", "Mid", "Intelligence", 2);
+                _dotaLogic.CreateHero("Sven", "Carry", "Strength", 1);
+                _dotaLogic.CreateHero("Lion", "Support", "Intelligence", 2);
+                _dotaLogic.CreateHero("Phantom Assassin", "Carry", "Agility", 2);
 
                 Console.WriteLine("Добавлено 10 тестовых героев");
             }
         }
+
+        // ВСЕ МЕТОДЫ КОНСОЛЬНОГО МЕНЮ (они используют _dotaLogic вместо создания нового)
 
         static void ShowConsoleMenu()
         {
@@ -137,7 +164,7 @@ namespace DotaApp
         {
             try
             {
-                var heroes = dotaLogic.GetAllHeroes();
+                var heroes = _dotaLogic.GetAllHeroes();
 
                 if (!heroes.Any())
                 {
@@ -170,8 +197,8 @@ namespace DotaApp
                 if (!int.TryParse(Console.ReadLine(), out int pageSize) || pageSize < 1)
                     pageSize = 5;
 
-                var totalHeroes = dotaLogic.GetTotalHeroesCount();
-                var totalPages = dotaLogic.GetTotalPages(pageSize);
+                var totalHeroes = _dotaLogic.GetTotalHeroesCount();
+                var totalPages = _dotaLogic.GetTotalPages(pageSize);
 
                 if (totalHeroes == 0)
                 {
@@ -185,7 +212,7 @@ namespace DotaApp
 
                 while (true)
                 {
-                    var heroes = dotaLogic.GetHeroesPage(currentPage, pageSize);
+                    var heroes = _dotaLogic.GetHeroesPage(currentPage, pageSize);
 
                     Console.WriteLine($"\n=== СТРАНИЦА {currentPage} из {totalPages} ===");
                     Console.WriteLine("ID  | Имя                  | Роль           | Атрибут       | Сложность");
@@ -245,7 +272,7 @@ namespace DotaApp
                     return;
                 }
 
-                var hero = dotaLogic.CreateHero(name, role, attribute, complexity);
+                var hero = _dotaLogic.CreateHero(name, role, attribute, complexity);
                 Console.WriteLine($"\n✓ Создан герой: {hero.Name} (ID: {hero.Id})");
                 Console.WriteLine($"Роль: {hero.Role}, Атрибут: {hero.Attribute}, Сложность: {hero.Complexity}");
             }
@@ -271,7 +298,7 @@ namespace DotaApp
                 }
 
                 // Проверяем существование героя
-                var existingHero = dotaLogic.GetHeroById(id);
+                var existingHero = _dotaLogic.GetHeroById(id);
                 if (existingHero == null)
                 {
                     Console.WriteLine($"Герой с ID {id} не найден.");
@@ -312,7 +339,7 @@ namespace DotaApp
                     return;
                 }
 
-                if (dotaLogic.UpdateHero(id, name, role, attribute, complexity))
+                if (_dotaLogic.UpdateHero(id, name, role, attribute, complexity))
                 {
                     Console.WriteLine("\n✓ Герой успешно обновлен!");
                 }
@@ -342,7 +369,7 @@ namespace DotaApp
                     return;
                 }
 
-                var hero = dotaLogic.GetHeroById(id);
+                var hero = _dotaLogic.GetHeroById(id);
                 if (hero == null)
                 {
                     Console.WriteLine($"Герой с ID {id} не найден.");
@@ -361,7 +388,7 @@ namespace DotaApp
 
                 if (confirm == "y" || confirm == "yes" || confirm == "да")
                 {
-                    if (dotaLogic.DeleteHero(id))
+                    if (_dotaLogic.DeleteHero(id))
                     {
                         Console.WriteLine($"\n✓ Герой '{hero.Name}' успешно удален!");
                     }
@@ -392,7 +419,7 @@ namespace DotaApp
                     return;
                 }
 
-                var hero = dotaLogic.GetHeroById(id);
+                var hero = _dotaLogic.GetHeroById(id);
 
                 if (hero == null)
                 {
@@ -426,7 +453,7 @@ namespace DotaApp
                     return;
                 }
 
-                var heroes = dotaLogic.FindByRole(role);
+                var heroes = _dotaLogic.FindByRole(role);
 
                 if (!heroes.Any())
                 {
@@ -454,7 +481,7 @@ namespace DotaApp
         {
             try
             {
-                var groups = dotaLogic.GroupByAttribute();
+                var groups = _dotaLogic.GroupByAttribute();
 
                 if (!groups.Any())
                 {
@@ -485,7 +512,7 @@ namespace DotaApp
         {
             try
             {
-                var totalHeroes = dotaLogic.GetTotalHeroesCount();
+                var totalHeroes = _dotaLogic.GetTotalHeroesCount();
 
                 if (totalHeroes == 0)
                 {
@@ -493,7 +520,7 @@ namespace DotaApp
                     return;
                 }
 
-                var allHeroes = dotaLogic.GetAllHeroes();
+                var allHeroes = _dotaLogic.GetAllHeroes();
 
                 // Статистика по сложности
                 var complexityGroups = allHeroes
@@ -502,7 +529,7 @@ namespace DotaApp
                     .ToDictionary(g => g.Key, g => g.Count());
 
                 // Статистика по атрибутам
-                var attributeGroups = dotaLogic.GroupByAttribute();
+                var attributeGroups = _dotaLogic.GroupByAttribute();
 
                 // Статистика по ролям
                 var roleGroups = allHeroes

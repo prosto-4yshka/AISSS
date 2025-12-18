@@ -42,7 +42,10 @@ namespace DotaApp
         public MainForm()
         {
             SetupForm();
-            dotaLogic = new DotaLogic();
+
+            // ИЗМЕНЕНИЕ: Получаем DotaLogic через IoC контейнер
+            dotaLogic = Program.GetLogic(); // Используем метод из Program.cs
+
             LoadAttributes();
             LoadRoles();
             RefreshHeroesList();
