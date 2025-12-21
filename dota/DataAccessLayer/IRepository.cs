@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 
+using System.Collections.Generic;
+
 namespace DataAccessLayer
 {
-    public interface IRepository<T> where T : IDomainObject
+    public interface IRepository<T> where T : class, IDomainObject
     {
         // Базовые CRUD
         void Add(T item);

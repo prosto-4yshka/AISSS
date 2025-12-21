@@ -9,13 +9,10 @@ namespace DotaApp
     {
         private readonly IRepository<Hero> repository;
 
-        // ИЗМЕНЕНИЕ: Внедряем зависимость через конструктор
         public DotaLogic(IRepository<Hero> repository)
         {
             this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
-
-        // СТАРЫЕ МЕТОДЫ (остаются без изменений):
 
         public Hero CreateHero(string name, string role, string attribute, int complexity)
         {
