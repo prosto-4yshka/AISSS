@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotaApp", "DotaApp\DotaApp.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "DataAccessLayer\DataAccessLayer.csproj", "{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presenter", "Presenter\Presenter.csproj", "{ABF2A45E-13C1-4729-9E95-BEECE7BA34A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotaWPF", "DotaWPF\DotaWPF.csproj", "{65836684-9380-41AD-AB2B-D7851B130692}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39C5F1ED-06EE-485B-86EC-7C0D4BD21FC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABF2A45E-13C1-4729-9E95-BEECE7BA34A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABF2A45E-13C1-4729-9E95-BEECE7BA34A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABF2A45E-13C1-4729-9E95-BEECE7BA34A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABF2A45E-13C1-4729-9E95-BEECE7BA34A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65836684-9380-41AD-AB2B-D7851B130692}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65836684-9380-41AD-AB2B-D7851B130692}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65836684-9380-41AD-AB2B-D7851B130692}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65836684-9380-41AD-AB2B-D7851B130692}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

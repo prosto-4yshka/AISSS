@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
-using System.Windows.Forms;
 using DataAccessLayer;
 using Ninject;
 
@@ -29,7 +27,7 @@ namespace DotaApp
 
                 Console.WriteLine("IoC контейнер инициализирован!");
                 Console.WriteLine("База данных: DotaDB.mdf");
-                Console.WriteLine("Запуск графического интерфейса...\n");
+                Console.WriteLine("\nЗапуск консольного меню...");
             }
             catch (Exception ex)
             {
@@ -53,21 +51,11 @@ namespace DotaApp
                 return;
             }
 
-            // Запускаем форму в отдельном потоке
-            var formThread = new Thread(() =>
-            {
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new MainForm());
-            });
-
-            formThread.Start();
-
-            // Запускаем консольное меню
+            // ЗАПУСКАЕМ ТОЛЬКО КОНСОЛЬНОЕ МЕНЮ
             ShowConsoleMenu();
         }
 
-        // Публичный метод для получения логики (используется в MainForm)
+        // Публичный метод для получения логики (используется в MainViewModel)
         public static DotaLogic GetLogic()
         {
             return _dotaLogic;
@@ -99,8 +87,7 @@ namespace DotaApp
             }
         }
 
-        // ВСЕ МЕТОДЫ КОНСОЛЬНОГО МЕНЮ (они используют _dotaLogic вместо создания нового)
-
+        // ВСЕ МЕТОДЫ КОНСОЛЬНОГО МЕНЮ
         static void ShowConsoleMenu()
         {
             while (true)
@@ -544,7 +531,7 @@ namespace DotaApp
                 foreach (var group in complexityGroups)
                 {
                     Console.WriteLine($"  Сложность {group.Key}: {group.Value} героев");
-                } 
+                }
 
                 Console.WriteLine("\nПо атрибутам:");
                 foreach (var group in attributeGroups)
