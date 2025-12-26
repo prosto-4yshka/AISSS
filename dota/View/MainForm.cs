@@ -11,7 +11,6 @@ namespace View
     {
         private DotaPresenter _presenter;
 
-        // События IView
         public event Action OnCreateHero;
         public event Action OnUpdateHero;
         public event Action OnDeleteHero;
@@ -20,7 +19,6 @@ namespace View
         public event Action OnGroupByAttribute;
         public event Action<int> OnPageChanged;
 
-        // Свойства IView
         public int CurrentPage { get; set; } = 1;
         public int PageSize { get; set; } = 3;
 
@@ -29,17 +27,19 @@ namespace View
             InitializeComponent();
             SetupForm();
 
-            // Создаем презентер через DI
-            _presenter = DataAccessLayerHelper.CreatePresenter(this);
+            // Инициализируем репозиторий в Hero
+            var repository = DataAccessLayerHelper.GetRepository();
+            Hero.InitializeRepository(repository);
+
+            // Создаем презентер (теперь модель - это Hero)
+            _presenter = new DotaPresenter(this, new Hero());
         }
 
         private void SetupForm()
         {
-            // Заполняем ComboBox'ы
             LoadAttributes();
             LoadRoles();
 
-            // Подписываемся на события кнопок
             btnCreate.Click += (s, e) => OnCreateHero?.Invoke();
             btnUpdate.Click += (s, e) => OnUpdateHero?.Invoke();
             btnDelete.Click += (s, e) => OnDeleteHero?.Invoke();
@@ -49,17 +49,11 @@ namespace View
             btnFirstPage.Click += (s, e) => OnPageChanged?.Invoke(1);
             btnPrevPage.Click += (s, e) => OnPageChanged?.Invoke(CurrentPage - 1);
             btnNextPage.Click += (s, e) => OnPageChanged?.Invoke(CurrentPage + 1);
-            btnLastPage.Click += (s, e) =>
-            {
-                // Переходим на реальную последнюю страницу
-                // Значение totalPages придет через UpdatePaginationInfo
-                OnPageChanged?.Invoke(999); // Максимальное значение, Presenter его скорректирует
-            };
+            btnLastPage.Click += (s, e) => OnPageChanged?.Invoke(999);
 
-            // Подписываемся на выбор героя в списке
             lstHeroes.SelectedIndexChanged += (s, e) =>
             {
-                if (lstHeroes.SelectedItem is IHero selectedHero)
+                if (lstHeroes.SelectedItem is Hero selectedHero)
                 {
                     txtName.Text = selectedHero.Name;
                     cmbRole.Text = selectedHero.Role;
@@ -82,7 +76,6 @@ namespace View
             cmbSearchRole.DataSource = roles.Clone();
         }
 
-        // Реализация методов IView
         public void ShowHeroes(List<IHero> heroes)
         {
             if (InvokeRequired)
@@ -123,7 +116,7 @@ namespace View
         public string GetHeroAttribute() => cmbAttribute.Text;
         public int GetHeroComplexity() => (int)numComplexity.Value;
 
-        public string GetSearchRole() // НОВЫЙ МЕТОД
+        public string GetSearchRole()
         {
             if (cmbSearchRole.SelectedItem != null)
                 return cmbSearchRole.SelectedItem.ToString();
@@ -132,7 +125,7 @@ namespace View
 
         public int GetSelectedHeroId()
         {
-            if (lstHeroes.SelectedItem is IHero hero)
+            if (lstHeroes.SelectedItem is Hero hero)
                 return hero.Id;
             return 0;
         }
@@ -149,7 +142,7 @@ namespace View
         {
             for (int i = 0; i < lstHeroes.Items.Count; i++)
             {
-                if (lstHeroes.Items[i] is IHero hero && hero.Id == heroId)
+                if (lstHeroes.Items[i] is Hero hero && hero.Id == heroId)
                 {
                     lstHeroes.SelectedIndex = i;
                     break;
@@ -165,19 +158,14 @@ namespace View
                 return;
             }
 
-            // Обновляем информацию о странице
             lblPageInfo.Text = $"Страница {currentPage} из {totalPages}";
+            lblTotalPages.Text = $"Всего героев: {totalHeroes} (на странице: {heroesOnPage})";
 
-            // Общее количество записей
-            lblTotalPages.Text = $"Всего героев: {totalHeroes}";
-
-            // Блокируем/разблокируем кнопки навигации
             btnFirstPage.Enabled = currentPage > 1;
             btnPrevPage.Enabled = currentPage > 1;
             btnNextPage.Enabled = currentPage < totalPages;
             btnLastPage.Enabled = currentPage < totalPages;
 
-            // Сохраняем текущую страницу
             CurrentPage = currentPage;
         }
     }

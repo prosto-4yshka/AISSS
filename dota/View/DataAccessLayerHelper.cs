@@ -18,13 +18,8 @@ namespace View
                 _kernel = new StandardKernel();
 
                 // Регистрируем репозиторий (Entity Framework)
-                _kernel.Bind<IRepository<DataAccessLayer.DomainEntity>>()
-                       .To<EntityRepository<DataAccessLayer.DomainEntity>>()
-                       .InSingletonScope();
-
-                // Регистрируем модель
-                _kernel.Bind<IModel>()
-                       .To<Model.DotaModel>()
+                _kernel.Bind<IRepository<DomainEntity>>()
+                       .To<EntityRepository<DomainEntity>>()
                        .InSingletonScope();
 
                 Console.WriteLine("[DI] Конфигурация завершена!");
@@ -36,14 +31,16 @@ namespace View
             }
         }
 
-        public static IModel GetModel()
+        public static IRepository<DomainEntity> GetRepository()
         {
-            return _kernel.Get<IModel>();
+            return _kernel.Get<IRepository<DomainEntity>>();
         }
 
         public static DotaPresenter CreatePresenter(IView view)
         {
-            var model = GetModel();
+            var repository = GetRepository();
+            Model.Hero.InitializeRepository(repository);
+            var model = new Model.Hero(); // Hero теперь и есть модель
             return new DotaPresenter(view, model);
         }
     }

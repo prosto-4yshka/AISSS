@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Shared;
 
 namespace Presenter
@@ -16,15 +15,12 @@ namespace Presenter
             _view = view ?? throw new ArgumentNullException(nameof(view));
             _model = model ?? throw new ArgumentNullException(nameof(model));
 
-            // Подписываемся на события View
             SubscribeToViewEvents();
-
-            // Подписываемся на события Model
             SubscribeToModelEvents();
-
-            // Инициализация
             InitializeView();
         }
+
+        //сделать тонкую пассивную модель
 
         private void SubscribeToViewEvents()
         {
@@ -69,8 +65,6 @@ namespace Presenter
                 );
 
                 _view.ClearInputFields();
-
-                // Переходим на последнюю страницу
                 UpdateTotalPages();
                 _view.CurrentPage = _currentTotalPages;
                 LoadHeroesPage(_currentTotalPages);
@@ -129,7 +123,6 @@ namespace Presenter
                     _view.ClearInputFields();
                     UpdateTotalPages();
 
-                    // Если удалили последнего героя на текущей странице
                     if (_view.CurrentPage > _currentTotalPages)
                     {
                         _view.CurrentPage = _currentTotalPages;
@@ -154,8 +147,6 @@ namespace Presenter
         {
             try
             {
-                // Получаем выбранную роль из View
-                // Для этого добавим метод в IView
                 string searchRole = _view.GetSearchRole();
 
                 if (string.IsNullOrEmpty(searchRole))
@@ -220,7 +211,6 @@ namespace Presenter
 
         private void View_OnPageChanged(int pageNumber)
         {
-            // Проверяем границы
             if (pageNumber < 1) pageNumber = 1;
             if (pageNumber > _currentTotalPages) pageNumber = _currentTotalPages;
 
@@ -231,7 +221,6 @@ namespace Presenter
         {
             try
             {
-                // Еще раз проверяем границы
                 if (pageNumber < 1) pageNumber = 1;
                 if (pageNumber > _currentTotalPages) pageNumber = _currentTotalPages;
 
@@ -239,7 +228,6 @@ namespace Presenter
                 _view.ShowHeroes(heroes);
                 _view.CurrentPage = pageNumber;
 
-                // Обновляем информацию о пагинации
                 var totalHeroes = _model.GetTotalHeroesCount();
                 _view.UpdatePaginationInfo(pageNumber, _currentTotalPages, totalHeroes, heroes.Count);
             }

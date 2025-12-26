@@ -16,7 +16,7 @@ namespace Shared
         string GetHeroAttribute();
         int GetHeroComplexity();
         int GetSelectedHeroId();
-        string GetSearchRole(); // НОВЫЙ МЕТОД для поиска по роли
+        string GetSearchRole();
 
         // Методы для очистки/сброса формы
         void ClearInputFields();
